@@ -1,0 +1,18 @@
+name: practice-2
+services:
+  web-server:
+    image: practice2-server:v1
+    build: ./server
+    volumes:
+      - logs:/shared
+  log-client:
+    image: practice2-client:v1
+    build: ./client
+    environment:
+      SERVER_URL: http://web-server:8080
+    depends_on:
+      - web-server
+    volumes:
+      - logs:/shared:ro
+volumes:
+  logs:

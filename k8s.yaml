@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: practice-2
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: practice-2
+  template:
+    metadata:
+      labels:
+        app: practice-2
+    spec:
+      containers:
+        - name: web-server
+          image: practice2-server:v1
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: http
+          volumeMounts:
+            - name: logs
+              mountPath: /shared
+        - name: log-client
+          image: practice2-client:v1
+          imagePullPolicy: Never
+          env:
+            - name: SERVER_URL
+              value: http://127.0.0.1:8080
+          volumeMounts:
+            - name: logs
+              mountPath: /shared
+              readOnly: true
+      volumes:
+        - name: logs
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: practice-2
+spec:
+  selector:
+    app: practice-2
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
